@@ -2,7 +2,7 @@
 // Pure module (no DOM / WebAudio). See docs/PROJECT_FORMAT.md.
 //
 // project = {
-//   format: 'digitone-web', version: 1, name, tempo,
+//   format: 'webtone', version: 1, name, tempo,
 //   current: 'A01',                 // pattern being edited (and played when stopped)
 //   patterns: { A01: Pattern, ... } // sparse; missing ids are empty
 //   song: { rows: [{ pattern: 'A01', repeats: 1 }] },
@@ -19,7 +19,8 @@ import {
   paramMachine, getDef, normalize,
 } from './params.js';
 
-export const FORMAT = 'digitone-web';
+export const FORMAT = 'webtone';
+const LEGACY_FORMATS = ['digitone-web']; // accepted on import, rewritten to FORMAT
 export const VERSION = 1;
 export const BANKS = 'ABCDEFGHIJKLMNOP'.split('');
 
@@ -196,7 +197,7 @@ export function validateProject(p) {
 /** Fill in any missing fields (forward-compat for older saves). Mutates & returns. */
 export function migrateProject(p) {
   if (!p || typeof p !== 'object') throw new Error('Project must be an object');
-  p.format ??= FORMAT;
+  if (p.format == null || LEGACY_FORMATS.includes(p.format)) p.format = FORMAT;
   p.version ??= VERSION;
   p.name ??= 'UNTITLED';
   p.tempo ??= 120;

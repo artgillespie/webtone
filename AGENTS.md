@@ -1,4 +1,4 @@
-# AGENTS.md — working in DIGITONE//WEB
+# AGENTS.md — working in WEBTONE//
 
 A browser FM/wavetable groovebox modelled on the Elektron Digitone II. Plain ES
 modules with **no build step and no runtime dependencies**. Node ≥ 20 is only
@@ -133,5 +133,5 @@ new scope needs cache invalidation.
   Keep factory sounds roughly in −10…−16 dBFS peak per voice (`tools/tracks.mjs`).
 * Negative micro timing is scheduled one step early; pattern changes happen at
   the master length boundary.
-* The store autosaves to `localStorage['digitone-web:project']`; `dt.dispatch({type:'loadProject', project})`
+* The store autosaves to `localStorage['webtone:project']`; `dt.dispatch({type:'loadProject', project})`
   or PROJECT → DEMO resets.

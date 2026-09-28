@@ -1,12 +1,12 @@
 # DEVLOG
 
-Running log of development sessions on DIGITONE//WEB.
+Running log of development sessions on WEBTONE//.
 
 ---
 
 ## 2026-09-27 — Session 1: initial build
 
-**What we built:** DIGITONE//WEB is a zero-dependency browser groovebox modelled on the Elektron Digitone II.
+**What we built:** WEBTONE// is a zero-dependency browser groovebox modelled on the Elektron Digitone II.
 - **Engine:** 16 tracks and 16 voices, with the FM TONE, FM DRUM, WAVETONE and SWARMER machines, plus filters, LFOs, arpeggiator and send FX. It runs in a single AudioWorklet with a sample-accurate sequencer.
 - **Sequencer:** parameter locks, trig conditions, micro timing, retrigs, chords, song mode.
 - **UI:** a retrofuture panel.

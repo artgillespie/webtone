@@ -15,7 +15,7 @@
 
 import { Engine, TEL } from './engine.js';
 
-class DigitoneProcessor extends AudioWorkletProcessor {
+class WebtoneProcessor extends AudioWorkletProcessor {
   constructor(options) {
     super();
     const o = options.processorOptions || {};
@@ -79,4 +79,4 @@ class DigitoneProcessor extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('digitone-engine', DigitoneProcessor);
+registerProcessor('webtone-engine', WebtoneProcessor);

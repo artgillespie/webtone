@@ -7,8 +7,11 @@ import { applyCommand } from '../core/commands.js';
 import { clone, migrateProject, validateProject } from '../core/project.js';
 import { demoProject } from '../core/demo.js';
 
-const SAVE_KEY = 'digitone-web:project';
-const USER_SOUNDS_KEY = 'digitone-web:sounds';
+const SAVE_KEY = 'webtone:project';
+const USER_SOUNDS_KEY = 'webtone:sounds';
+// Keys used before the rename; read once as a fallback so existing saves survive.
+const LEGACY_KEYS = { [SAVE_KEY]: 'digitone-web:project', [USER_SOUNDS_KEY]: 'digitone-web:sounds' };
+const readKey = (k) => localStorage.getItem(k) ?? localStorage.getItem(LEGACY_KEYS[k]);
 const HISTORY_MAX = 120;
 
 export class Store {
@@ -129,7 +132,7 @@ export class Store {
   // ------------------------------------------------------------ persistence
   _loadSaved() {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
+      const raw = readKey(SAVE_KEY);
       if (!raw) return null;
       const p = migrateProject(JSON.parse(raw));
       const errs = validateProject(p);
@@ -148,7 +151,7 @@ export class Store {
   }
 
   userSounds() {
-    try { return JSON.parse(localStorage.getItem(USER_SOUNDS_KEY) || '[]'); } catch { return []; }
+    try { return JSON.parse(readKey(USER_SOUNDS_KEY) || '[]'); } catch { return []; }
   }
   saveUserSound(sound) {
     const list = this.userSounds().filter((s) => s.name !== sound.name);

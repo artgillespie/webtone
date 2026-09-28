@@ -36,4 +36,4 @@ createServer(async (req, res) => {
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain' }).end('not found');
   }
-}).listen(port, () => console.log(`DIGITONE//WEB → http://localhost:${port}`));
+}).listen(port, () => console.log(`WEBTONE// → http://localhost:${port}`));

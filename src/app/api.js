@@ -16,7 +16,7 @@ export function installApi(app) {
   const dt = {
     version: 1,
     help() {
-      const txt = `DIGITONE//WEB agent API (window.dt)
+      const txt = `WEBTONE// agent API (window.dt)
   State
     dt.state()                      -> deep copy of the project JSON
     dt.ui()                         -> UI state {track, page, stepPage, selected[], ...}

@@ -106,3 +106,12 @@ test('project survives JSON round-trip', () => {
   assert.deepEqual(back, d);
   assert.deepEqual(validateProject(back), []);
 });
+
+test('projects saved under the legacy format id still load', async () => {
+  const { migrateProject, FORMAT } = await import('../src/core/project.js');
+  const old = demoProject();
+  old.format = 'digitone-web';
+  const p = migrateProject(clone(old));
+  assert.equal(p.format, FORMAT);
+  assert.deepEqual(validateProject(p), []);
+});

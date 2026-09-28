@@ -1,4 +1,4 @@
-# DIGITONE//WEB
+# WEBTONE//
 
 A retrofuture browser groovebox inspired by the **Elektron Digitone II**: 16
 tracks, 16 voices, four synth machines, parameter-lock sequencing, and send

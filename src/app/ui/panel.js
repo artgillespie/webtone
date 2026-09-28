@@ -34,7 +34,7 @@ export function mountHeader(app) {
 
   root.append(
     h('div.stripes', h('i'), h('i'), h('i'), h('i'), h('i')),
-    h('div.logo', 'DIGITONE', h('span.ii', 'II'), h('small', '//WEB')),
+    h('div.logo', 'WEBTONE', h('span.ii', '//')),
     h('div.hdr-group', pat, tempo),
     h('div.transport', rec, play, stop),
     h('div.hdr-group', fill, song),

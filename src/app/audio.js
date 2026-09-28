@@ -40,7 +40,7 @@ export class AudioBridge {
       this.telemetry = new Float32Array(sab);
       this.shared = true;
     }
-    const node = new AudioWorkletNode(ctx, 'digitone-engine', {
+    const node = new AudioWorkletNode(ctx, 'webtone-engine', {
       numberOfInputs: 0,
       numberOfOutputs: 1,
       outputChannelCount: [2],
@@ -127,7 +127,7 @@ export class AudioBridge {
     const frames = Math.ceil(seconds * sr);
     const off = new OfflineAudioContext({ numberOfChannels: 2, length: frames, sampleRate: sr });
     await off.audioWorklet.addModule(WORKLET_URL);
-    const node = new AudioWorkletNode(off, 'digitone-engine', {
+    const node = new AudioWorkletNode(off, 'webtone-engine', {
       numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2],
       processorOptions: { project, seed: opts.seed || 1, autoplay: true, songMode: !!opts.song },
     });

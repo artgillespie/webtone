@@ -221,7 +221,7 @@ export class Overlays {
       h('div.formrow',
         h('div.field', h('label', 'PROJECT NAME'), name),
         h('div.field', h('label', 'FILES'), h('div.row',
-          h('button.btn', { 'data-testid': 'export-json', on: { click: () => download(`${store.project.name || 'project'}.digitone.json`, new Blob([JSON.stringify(store.project, null, 1)], { type: 'application/json' })) } }, 'EXPORT JSON'),
+          h('button.btn', { 'data-testid': 'export-json', on: { click: () => download(`${store.project.name || 'project'}.webtone.json`, new Blob([JSON.stringify(store.project, null, 1)], { type: 'application/json' })) } }, 'EXPORT JSON'),
           h('button.btn', { on: { click: () => file.click() } }, 'IMPORT JSON'), file)),
         h('div.field', h('label', 'NEW'), h('div.row',
           h('button.btn', { on: { click: () => { store.dispatch({ type: 'loadProject', project: newProject() }); toast('New project'); this.render(); } } }, 'EMPTY'),
