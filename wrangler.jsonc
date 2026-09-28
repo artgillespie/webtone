@@ -3,6 +3,8 @@
 {
   "name": "webtone",
   "compatibility_date": "2026-09-01",
+  // Stamps version.json (git sha + build date) before every deploy.
+  "build": { "command": "node tools/version.mjs" },
   "assets": {
     // The repo root *is* the site (no build step). Dev-only files are
     // excluded by .assetsignore; response headers come from _headers.

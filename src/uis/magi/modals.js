@@ -184,6 +184,9 @@ export class Modals {
     const status = h('span.ev-dim');
     const lat = audio.latencyInfo();
     return [
+      h('div.ev-row.wrap', { 'data-testid': 'about' },
+        h('span.ev-lbl', 'WEBTONE//'), h('span.ev-ver', host.about.label),
+        h('a.ev-btn.sm', { href: host.about.repo, target: '_blank', rel: 'noopener' }, 'SOURCE // GITHUB ↗')),
       h('div.ev-sub-lbl', 'INTERFACE SELECT // 表示系統  (PRESS \\ TO CYCLE)'),
       h('div.ev-cards', { 'data-testid': 'ui-switcher' }, ...host.uis.map((u) => h('button.ev-card' + (host.ui && host.ui.id === u.id ? '.on' : ''), { 'data-testid': 'ui-' + u.id, on: { click: () => host.useUI(u.id) } },
         h('b', u.name), h('span', u.description)))),

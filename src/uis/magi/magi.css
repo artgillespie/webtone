@@ -315,6 +315,8 @@ body.ui-magi::after { /* scanlines */
 .ev-card.on { background: var(--or); color: #000; }
 .ev-card.on span { color: #000; }
 .ev-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.ev-ver { font-family: var(--mono); color: var(--gr); font-size: 12px; letter-spacing: 0.08em; }
+a.ev-btn { text-decoration: none; display: inline-block; }
 .ev-pre { background: #000; border: 1px solid var(--or-d); color: var(--gr); font-family: var(--mono); font-size: 11px; padding: 10px; user-select: text; }
 .ev-help { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 6px 24px; }
 .ev-help div { display: flex; gap: 12px; justify-content: space-between; border-bottom: 1px solid rgba(255, 106, 0, 0.12); padding: 4px 0; color: var(--or2); font-size: 14px; }

@@ -30,6 +30,7 @@ import { migrateProject, validateProject } from '../core/project.js';
 import { TEL } from '../engine/engine.js';
 
 const UI_KEY = 'webtone:ui';
+export const REPO_URL = 'https://github.com/artgillespie/webtone';
 
 export function createHost(root) {
   const store = new Store();
@@ -42,7 +43,18 @@ export function createHost(root) {
     view: null,      // active view instance
     midiStatus: null,
     toast,
+    // Build info: version.json is written at deploy time (tools/version.mjs);
+    // absent in local dev, where `about.label` reads "dev build".
+    about: { repo: REPO_URL, sha: null, date: null, label: 'dev build' },
   };
+  fetch(new URL('../../version.json', import.meta.url), { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((v) => {
+      if (!v) return;
+      Object.assign(host.about, v, { label: `build ${v.sha} · ${String(v.date).slice(0, 10)}` });
+      host.requestUpdate('ui', { about: true });
+    })
+    .catch(() => {});
 
   // ---------------------------------------------------------------- render loop
   let dirty = true, dirtyKind = 'all', dirtyDetail = null;

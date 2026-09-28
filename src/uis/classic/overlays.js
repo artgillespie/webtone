@@ -217,6 +217,9 @@ export class Overlays {
     const uis = h('div.machines', { 'data-testid': 'ui-switcher' }, ...this.app.uis.map((u) =>
       h('button.btn' + (this.app.ui && u.id === this.app.ui.id ? '.on' : ''), { 'data-testid': 'ui-' + u.id, on: { click: () => this.app.useUI(u.id) } }, h('b', u.name), h('span', u.description))));
     return [
+      h('div.formrow', { 'data-testid': 'about' },
+        h('span.pick-label', `WEBTONE// · ${this.app.about.label}`),
+        h('a.btn.small', { href: this.app.about.repo, target: '_blank', rel: 'noopener', style: { textDecoration: 'none' } }, 'SOURCE ON GITHUB ↗')),
       h('h4', 'INTERFACE  ·  press \\ to cycle'), uis,
       h('h4', 'PROJECT'),
       h('div.formrow',

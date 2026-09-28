@@ -140,6 +140,7 @@ export function installApi(host) {
     uis: () => host.uis.map((u) => ({ id: u.id, name: u.name, description: u.description, active: !!host.ui && host.ui.id === u.id })),
     async useUI(id) { await host.useUI(id); return dt.uis(); },
     errors: () => [...audio.errors],
+    about: () => ({ ...host.about }),
     /**
      * In-page end-to-end check of UI <-> store <-> engine wiring. Leaves the
      * project unchanged (uses undo). Returns { ok, results: [{name, ok, detail}] }.

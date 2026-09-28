@@ -22,6 +22,10 @@ The repo root is the site. `wrangler.jsonc` configures it, `_headers` sets
 COOP/COEP (so `crossOriginIsolated` is true and telemetry uses SharedArrayBuffer),
 and `.assetsignore` keeps dev files (`test/`, `tools/`, configs) from being published.
 When adding dev-only files at the root, add them to `.assetsignore`.
+Pushes to `main` auto-deploy through Cloudflare Workers Builds (build command `npm test`).
+Each deploy runs `tools/version.mjs` (Wrangler custom build) to write `version.json`
+(`{sha, date, branch, builder}`, gitignored). Settings shows it with the GitHub link,
+and `dt.about()` returns it, so agents can confirm which commit is live.
 
 In the browser console: `dt.help()`, `await dt.selftest()`, `dt.uis()`, `await dt.useUI('magi')`.
 
