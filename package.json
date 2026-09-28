@@ -10,7 +10,11 @@
     "test": "node --test test/*.test.js",
     "render": "node tools/render.mjs",
     "describe": "node tools/describe.mjs",
-    "bench": "node tools/bench.mjs"
+    "bench": "node tools/bench.mjs",
+    "preview": "npx wrangler@4 dev --port 8787",
+    "deploy": "npm test && npx wrangler@4 deploy"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

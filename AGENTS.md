@@ -13,7 +13,15 @@ npm run render -- --bars 4 --song --out out/demo.wav   # headless offline render
 node tools/tracks.mjs          # per-track level report (catch level/balance bugs without ears)
 npm run bench                  # DSP realtime factor per machine
 npm run describe               # regenerate docs/REFERENCE.md (params, pages, commands, presets)
+npm run preview                # production setup locally (Cloudflare wrangler dev, :8787)
+npm run deploy                 # tests, then deploy to Cloudflare Workers (needs `npx wrangler login` once)
 ```
+
+**Deployment**: Cloudflare Workers static assets, no Worker script and no build step.
+The repo root is the site. `wrangler.jsonc` configures it, `_headers` sets
+COOP/COEP (so `crossOriginIsolated` is true and telemetry uses SharedArrayBuffer),
+and `.assetsignore` keeps dev files (`test/`, `tools/`, configs) from being published.
+When adding dev-only files at the root, add them to `.assetsignore`.
 
 In the browser console: `dt.help()`, `await dt.selftest()`, `dt.uis()`, `await dt.useUI('magi')`.
 

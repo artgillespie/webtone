@@ -44,6 +44,16 @@ npm test
   * SharedArrayBuffer telemetry.
   * Output device selection via `setSinkId`.
 
+## Deploy
+
+It's a static site, so any HTTPS host works. The included setup targets Cloudflare Workers, with headers for
+cross-origin isolation in `_headers`:
+
+```sh
+npx wrangler login   # once
+npm run deploy       # runs the tests, then deploys
+```
+
 For development and automation (agents welcome), see **[AGENTS.md](AGENTS.md)** and the generated
 **[docs/REFERENCE.md](docs/REFERENCE.md)**.
 

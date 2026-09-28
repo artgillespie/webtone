@@ -1,0 +1,13 @@
+# Files that must not be uploaded as public site assets.
+.git
+.gitignore
+.assetsignore
+.wrangler
+node_modules
+wrangler.jsonc
+package.json
+package-lock.json
+test
+tools
+out
+*.wav
