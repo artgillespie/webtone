@@ -32,6 +32,10 @@ npm test
   * Live and step recording.
   * 256 patterns with a kit per pattern, and song mode.
 * **FX**: ping-pong tape delay, FDN reverb, chorus, a compressor with track sidechain, and master drive.
+* **Two interchangeable UIs** (press `\` or pick one in settings):
+  * **CLASSIC**: a hardware-faithful panel with display, encoders and trig keys.
+  * **MAGI**: a direct-manipulation command center in the style of 90s anime computer screens. Every parameter is a draggable readout, and envelopes, filter, LFOs and FM algorithm are edited on the graphs themselves.
+  * UIs are plugins over a headless core, see [src/uis/README.md](src/uis/README.md).
 * **Mixer, sound library and projects**: a mixer, factory and user sound libraries, JSON project import/export, and offline WAV rendering.
 * **Input**: computer keyboard, on-screen piano and Web MIDI input.
 * **Low latency**

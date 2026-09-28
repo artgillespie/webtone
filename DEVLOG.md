@@ -34,3 +34,33 @@ Running log of development sessions on WEBTONE//.
 - MIDI tracks and external audio input are not implemented.
 - FM algorithms and parameter scaling are approximations of the hardware.
 - Factory sounds were balanced by measurement only, not by ear.
+
+---
+
+## 2026-09-28 — Session 2: license, GitHub, swappable UIs + MAGI
+
+**What we built:**
+- **Housekeeping:** added the MIT license and published to https://github.com/artgillespie/webtone.
+- **Decoupled UI:** split the app into a headless **host** (store, audio engine, actions, keys, MIDI, `dt` API, render loop) and swappable **UI plugins** (`src/uis/*`). You can switch at runtime with `\`, the settings panel, `?ui=`, or `dt.useUI()`.
+- **Classic UI:** kept the original interface as the `classic` plugin.
+- **New MAGI UI:** a direct-manipulation command center modelled on 90s anime computer displays.
+  - All parameters of the selected track are visible at once as draggable readouts.
+  - Editable graphs: envelopes, filter curve with a base-width band, LFO shapes and the FM algorithm.
+  - A paintable 16×16 sequencer matrix.
+  - MAGI status tiles, and windows for mixer, patterns, song, sounds and system.
+- **Undo:** gesture-scoped undo (one drag = one undo step) in the store.
+
+**Wall time:** about 35 min for the UI work (≈10:45 → 11:20), inferred from commit timestamps.
+
+**Usage:** not yet recorded (add `/usage` figures here).
+**Token detail** (from the model's visible token budget counter): about **146k tokens** for this request. It isn't billing-exact.
+
+**Verification:**
+- 44 Node tests, including new store undo/gesture tests.
+- `dt.selftest()` passes under both UIs: core, engine and UI-specific checks.
+- A real mouse drag on the MAGI filter graph changes FREQ/RESO and records a single undo step.
+- UI switching fully swaps DOM, CSS and body class without touching project state.
+
+**Known gaps / next ideas:**
+- MAGI assumes a desktop-size viewport. Below 1280 px it stacks and scrolls.
+- The classic knob drag still uses time-based undo coalescing instead of gestures.

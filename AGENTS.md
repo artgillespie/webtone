@@ -15,7 +15,7 @@ npm run bench                  # DSP realtime factor per machine
 npm run describe               # regenerate docs/REFERENCE.md (params, pages, commands, presets)
 ```
 
-In the browser console: `dt.help()`, `await dt.selftest()`.
+In the browser console: `dt.help()`, `await dt.selftest()`, `dt.uis()`, `await dt.useUI('magi')`.
 
 ## Architecture (one-way data flow)
 
@@ -44,6 +44,11 @@ In the browser console: `dt.help()`, `await dt.selftest()`.
   seeded `Rng`. Same project + seed + commands ⇒ bit-identical audio.
 * Transport/performance messages (play, stop, fill, song mode, live notes) are
   *not* reducer commands; they're engine methods / worklet messages.
+* **UIs are plugins.** `src/app/host.js` is the headless app (store, audio,
+  actions, keys, MIDI, `dt` API, render loop). Plugins in `src/uis/<id>/` mount
+  into it and can be swapped at runtime (`\` key, settings, `?ui=`, `dt.useUI`).
+  Contract and host API: [src/uis/README.md](src/uis/README.md). Today: `classic`
+  (hardware-faithful) and `magi` (direct manipulation).
 
 ## File map
 
@@ -58,11 +63,16 @@ In the browser console: `dt.help()`, `await dt.selftest()`.
 | `src/engine/filters.js` | 6 filter machines (MULTI, LP4 ladder, LEGACY, COMB±, EQ) + base-width |
 | `src/engine/fx.js` | Chorus, delay, FDN reverb, compressor (sidechain), master limiter |
 | `src/engine/worklet.js` | AudioWorkletProcessor wrapper + message protocol |
-| `src/app/store.js` | Main-thread state, undo/redo, autosave (localStorage) |
+| `src/app/host.js` | Headless app runtime + UI plugin mounting/switching, render loop, files, MIDI |
+| `src/app/store.js` | Main-thread state, undo/redo (gestures, coalescing), autosave (localStorage) |
 | `src/app/audio.js` | AudioContext, worklet node, telemetry, offline render |
 | `src/app/actions.js` | User-level actions (lock-aware param edits, recording, copy/paste) |
 | `src/app/api.js` | `window.dt` agent API |
-| `src/app/ui/*` | Views: `panel.js` (header/tracks/encoders/sequencer/keyboard/inspector), `screen.js` (canvas display), `overlays.js`, `knob.js` |
+| `src/app/keys.js` | Computer keyboard (piano + shortcuts), UI-agnostic via `host.command` |
+| `src/app/ui/*` | Helpers shared by UIs (`dom.js`, `knob.js`) |
+| `src/uis/index.js` | UI plugin registry |
+| `src/uis/classic/*` | CLASSIC UI: `panel.js`, `screen.js` (canvas display), `overlays.js` |
+| `src/uis/magi/*` | MAGI UI: `gauge.js` (readouts), `graphs.js` (editable envelopes/filter/LFO/algo/scope), `matrix.js`, `modals.js` |
 | `tools/` | `serve`, `render`, `tracks`, `bench`, `describe` |
 | `docs/REFERENCE.md` | Generated param/command reference (a test fails if stale) |
 
@@ -95,13 +105,15 @@ mutes/solos/tempo/song are project-global.
 2. Audio sanity without ears: `node tools/render.mjs --json` and `node tools/tracks.mjs`
    (peak/RMS/zero-crossing "brightness", NaN count). The machine fuzz test renders
    random params for every machine and fails on NaN/silence/clipping.
-3. In the browser: `await dt.selftest()` exercises DOM → store → engine wiring,
+3. In the browser: `await dt.selftest()` exercises DOM → store → engine wiring
+   (core checks + the active UI's own `selftest`; run it under each UI),
    `dt.telemetry()`, `await dt.captureNotes(2000)` (note log from the audio thread),
    `await dt.render({bars: 2})` (offline render with the real worklet).
    The UI keeps rendering in hidden tabs (timer fallback), so DOM state is inspectable.
-   Stable selectors: `[data-testid=trig-1..16]`, `encoder-A..H`, `page-SYN1`, `track-1..16`,
-   `menu-mixer`, `overlay-*`, `play`, `stop`, `rec`, `power`; knobs are ARIA sliders
-   with `data-param` (arrow keys work).
+   Stable selectors (both UIs): `play`, `stop`, `rec`, `power`, `menu-*`, `overlay-*`,
+   `ui-<id>`; CLASSIC: `trig-1..16`, `encoder-A..H`, `page-SYN1`, `track-1..16`;
+   MAGI: `cell-<track>-<step>`, `mx-track-N`, `filter-graph`, `amp-env`, `lfoN-graph`.
+   Every parameter control is an ARIA slider with `data-param` (arrow keys work).
 
 ## Recipes
 
@@ -122,6 +134,10 @@ the engine picks it up through the change descriptor's `scope`
 new scope needs cache invalidation.
 
 **Add an FX param**: append to `FX_PARAMS` (+ `FX_PAGES`), read with `FX_INDEX`.
+
+**Add a UI**: create `src/uis/<id>/index.js` implementing the plugin contract
+([src/uis/README.md](src/uis/README.md)), register it in `src/uis/index.js`,
+give it a `selftest`, and verify with `?ui=<id>` + `await dt.selftest()`.
 
 ## Invariants / gotchas
 

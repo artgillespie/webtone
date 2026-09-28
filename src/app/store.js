@@ -34,8 +34,9 @@ export class Store {
     this.listeners = new Set();
     this.past = [];
     this.future = [];
-    this._coalesceKey = null;
+    this._coalesceKeys = new Set();
     this._coalesceAt = 0;
+    this._gesture = null; // { snap: bool } while a pointer gesture is in progress
     this._saveTimer = 0;
     this.engineSink = null; // set by audio: (cmd) => void
   }
@@ -59,14 +60,19 @@ export class Store {
    */
   dispatch(cmd, { coalesce = null, history = true } = {}) {
     const now = performance.now();
+    // Coalescing: keyed edits in one burst (no gap > 800ms, no un-keyed command
+    // in between) share one undo step — e.g. a graph drag setting FREQ + RESO.
+    if (now - this._coalesceAt > 800) this._coalesceKeys.clear();
+    const merged = (!!coalesce && this._coalesceKeys.size > 0) || (this._gesture && this._gesture.snap);
+    const touch = () => { if (coalesce) this._coalesceKeys.add(coalesce); else this._coalesceKeys.clear(); this._coalesceAt = now; };
     if (Array.isArray(cmd)) { // one undo step for the whole batch
-      if (history && !(coalesce && coalesce === this._coalesceKey && now - this._coalesceAt < 800)) this._pushPast(clone(this.project));
+      if (history && !merged) { this._pushPast(clone(this.project)); if (this._gesture) this._gesture.snap = true; }
       const out = cmd.map((c) => this.dispatch(c, { history: false }));
-      this._coalesceKey = coalesce;
-      this._coalesceAt = now;
+      touch();
       return out;
     }
-    const snapshot = history && !(coalesce && coalesce === this._coalesceKey && now - this._coalesceAt < 800);
+    const snapshot = history && !merged;
+    if (snapshot && this._gesture) this._gesture.snap = true;
     const before = snapshot ? clone(this.project) : null;
     let ch;
     try {
@@ -77,14 +83,20 @@ export class Store {
       throw e;
     }
     if (before) this._pushPast(before);
-    this._coalesceKey = coalesce;
-    this._coalesceAt = now;
+    if (history) touch();
     if (this.engineSink) this.engineSink(cmd);
     if (ch.scope === 'current' || ch.scope === 'all') this._clampUi();
     this.emit('project', ch);
     this._scheduleSave();
     return ch;
   }
+
+  /**
+   * Group every dispatch between begin/endGesture (e.g. one pointer drag)
+   * into a single undo step, however long the gesture takes.
+   */
+  beginGesture() { this._gesture = { snap: false }; }
+  endGesture() { this._gesture = null; this._coalesceKeys.clear(); }
 
   _pushPast(p) {
     this.past.push(p);
@@ -118,14 +130,14 @@ export class Store {
   undo() {
     if (!this.past.length) return false;
     this.future.push(this._restore(this.past.pop()));
-    this._coalesceKey = null;
+    this._coalesceKeys.clear();
     return true;
   }
 
   redo() {
     if (!this.future.length) return false;
     this.past.push(this._restore(this.future.pop()));
-    this._coalesceKey = null;
+    this._coalesceKeys.clear();
     return true;
   }
 

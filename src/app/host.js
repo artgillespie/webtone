@@ -83,7 +83,10 @@ export function createHost(root) {
 
   // ---------------------------------------------------------------- UI plugins
   let cssLink = null;
-  host.useUI = async (id) => {
+  let switching = Promise.resolve();
+  // Serialized: overlapping switches (e.g. key repeat on `\`) run one at a time.
+  host.useUI = (id) => (switching = switching.catch(() => {}).then(() => mountUI(id)));
+  const mountUI = async (id) => {
     const desc = UIS.find((u) => u.id === id);
     if (!desc) throw new Error(`Unknown UI "${id}". Available: ${UIS.map((u) => u.id).join(', ')}`);
     const mod = (await desc.load()).default;
