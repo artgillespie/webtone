@@ -454,7 +454,7 @@ function renderInspector(app, root) {
     h('div.inspector',
       h('div.field', h('label', 'TRIG'), typeBtns),
       h('div.field', h('label', 'NOTE'), h('div.row', noteLcd, h('span.pick-label', 'drag'))),
-      h('div.field', h('label', 'CHORD'), chord),
+      h('div.field', { style: { gridColumn: 'span 2' } }, h('label', 'CHORD'), chord),
       h('div.field', h('label', 'VELOCITY'), velIn),
       h('div.field', h('label', 'LENGTH'), lenSel),
       h('div.field', h('label', 'CONDITION'), condSel),

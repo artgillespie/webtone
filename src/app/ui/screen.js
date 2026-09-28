@@ -37,6 +37,7 @@ export class Screen {
     this.w = Math.max(200, r.width); this.h = Math.max(150, r.height);
     this.cv.width = Math.round(this.w * this.dpr);
     this.cv.height = Math.round(this.h * this.dpr);
+    if (this.app.store) this.draw(); // resizing clears the canvas
   }
 
   touch(id) { this.focus = { id, until: performance.now() + 1400 }; }
@@ -341,37 +342,33 @@ export class Screen {
     // layout: carriers bottom, modulators stacked above by depth
     const depth = { C: 0, A: 0, B1: 0, B2: 0 };
     for (let k = 0; k < 4; k++) for (const [dst, src] of algo.mods) depth[src] = Math.max(depth[src], depth[dst] + 1);
-    const maxD = Math.max(...Object.values(depth));
     const cols = {};
     const byDepth = {};
     for (const o of ops) (byDepth[depth[o]] ||= []).push(o);
-    const bw = 44, bh = 24;
-    const rowH = Math.min(38, (v.h - 30) / (maxD + 1));
+    // horizontal layout: carriers (depth 0) on the left, modulators to the right
+    const bw = 40, bh = 20, colW = 78;
     for (const [d, list] of Object.entries(byDepth)) {
-      list.forEach((o, i) => {
-        const x = v.x + v.w * 0.08 + ((i + 0.5) / list.length) * v.w * 0.55 - bw / 2;
-        const y = v.y + v.h - 26 - d * rowH - bh;
-        cols[o] = { x, y };
-      });
+      list.forEach((o, i) => { cols[o] = { x: v.x + 16 + d * colW, y: v.y + 30 + i * (bh + 14) }; });
     }
     ctx.strokeStyle = C.phDim; ctx.lineWidth = 1.4;
     for (const [dst, src] of algo.mods) {
       const a = cols[src], b = cols[dst];
-      ctx.beginPath(); ctx.moveTo(a.x + bw / 2, a.y + bh); ctx.lineTo(b.x + bw / 2, b.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(a.x, a.y + bh / 2); ctx.lineTo(b.x + bw, b.y + bh / 2); ctx.stroke();
     }
     ctx.lineWidth = 1;
-    // outputs
-    const outY = v.y + v.h - 8;
-    const X = v.x + v.w * 0.08 + v.w * 0.62, Y = X + 60;
-    for (const [bus, list, bx] of [['X', algo.X, X], ['Y', algo.Y, Y]]) {
+    // outputs: drop from each tapped op to the X / Y bus lines at the bottom
+    const busY = { X: v.y + v.h - 22, Y: v.y + v.h - 8 };
+    const busEnd = v.x + v.w - 30;
+    for (const [bus, list] of [['X', algo.X], ['Y', algo.Y]]) {
+      ctx.strokeStyle = bus === 'X' ? C.ph : C.teal;
       for (const o of list) {
         const a = cols[o];
-        ctx.strokeStyle = bus === 'X' ? C.ph : C.teal;
-        ctx.beginPath(); ctx.moveTo(a.x + bw / 2, a.y + bh); ctx.lineTo(a.x + bw / 2, outY); ctx.lineTo(bx, outY); ctx.stroke();
+        const xo = a.x + bw / 2 + (bus === 'X' ? -4 : 4);
+        ctx.beginPath(); ctx.moveTo(xo, a.y + bh); ctx.lineTo(xo, busY[bus]); ctx.lineTo(busEnd, busY[bus]); ctx.stroke();
       }
       ctx.fillStyle = bus === 'X' ? C.ph : C.teal;
-      ctx.font = `12px ${WIDE}`;
-      ctx.fillText(bus, bx + 4, outY + 1);
+      ctx.font = `11px ${WIDE}`;
+      ctx.fillText(bus, busEnd + 6, busY[bus] + 1);
     }
     for (const o of ops) {
       const a = cols[o];
@@ -386,7 +383,7 @@ export class Screen {
       ctx.textAlign = 'left';
       if (isFb) {
         ctx.strokeStyle = C.orange;
-        ctx.beginPath(); ctx.arc(a.x + bw + 6, a.y + bh / 2, 7, Math.PI * 0.6, Math.PI * 2.4); ctx.stroke();
+        ctx.beginPath(); ctx.arc(a.x + bw / 2, a.y - 3, 6, Math.PI * 0.9, Math.PI * 2.1); ctx.stroke();
       }
     }
     ctx.fillStyle = C.phDim; ctx.font = `10px ${MONO}`;
