@@ -1,0 +1,15 @@
+{
+  "name": "digitone-web",
+  "version": "0.1.0",
+  "description": "A browser FM/wavetable groovebox workstation inspired by the Elektron Digitone II. Zero runtime dependencies.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node --test test/*.test.js",
+    "render": "node tools/render.mjs",
+    "describe": "node tools/describe.mjs",
+    "bench": "node tools/bench.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
