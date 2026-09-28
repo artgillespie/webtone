@@ -42,3 +42,7 @@ npm test
 
 For development and automation (agents welcome), see **[AGENTS.md](AGENTS.md)** and the generated
 **[docs/REFERENCE.md](docs/REFERENCE.md)**.
+
+## License
+
+[MIT](LICENSE) © 2026 Art Gillespie. Not affiliated with Elektron; "Digitone" is a trademark of Elektron Music Machines.

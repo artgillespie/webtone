@@ -4,6 +4,7 @@
   "description": "A browser FM/wavetable groovebox workstation inspired by the Elektron Digitone II. Zero runtime dependencies.",
   "type": "module",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "start": "node tools/serve.mjs",
     "test": "node --test test/*.test.js",
