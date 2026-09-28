@@ -74,7 +74,7 @@ Running log of development sessions on WEBTONE//.
   - Dev files return 404.
   - The offline render matches local exactly (RMS −16.4 dB).
   - `version.json` reports the pushed SHA, built by `workers-builds`.
-- Not verified by automation: realtime audio on the live site, because a background tab gives no user gesture. Checked by hand.
+- Not verified by automation: realtime audio on the live site, because a background tab gives no user gesture. Still needs a manual check.
 
 **Known gaps / next ideas:**
 - MAGI assumes a desktop viewport and stacks below 1280 px.
