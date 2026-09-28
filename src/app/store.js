@@ -11,7 +11,7 @@ const SAVE_KEY = 'webtone:project';
 const USER_SOUNDS_KEY = 'webtone:sounds';
 // Keys used before the rename; read once as a fallback so existing saves survive.
 const LEGACY_KEYS = { [SAVE_KEY]: 'digitone-web:project', [USER_SOUNDS_KEY]: 'digitone-web:sounds' };
-const readKey = (k) => localStorage.getItem(k) ?? localStorage.getItem(LEGACY_KEYS[k]);
+const readKey = (k) => (typeof localStorage === 'undefined' ? null : localStorage.getItem(k) ?? localStorage.getItem(LEGACY_KEYS[k]));
 const HISTORY_MAX = 120;
 
 export class Store {
@@ -154,11 +154,13 @@ export class Store {
   }
 
   _scheduleSave() {
+    if (typeof localStorage === 'undefined') return;
     clearTimeout(this._saveTimer);
     this._saveTimer = setTimeout(() => this.saveNow(), 600);
   }
 
   saveNow() {
+    if (typeof localStorage === 'undefined') return; // headless (Node tests)
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.project)); } catch (e) { console.warn('[store] save failed', e); }
   }
 
