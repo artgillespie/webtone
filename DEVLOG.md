@@ -64,3 +64,14 @@ Running log of development sessions on WEBTONE//.
 **Known gaps / next ideas:**
 - MAGI assumes a desktop-size viewport. Below 1280 px it stacks and scrolls.
 - The classic knob drag still uses time-based undo coalescing instead of gestures.
+
+### 2026-09-28 — Deployed
+
+- **Live:** https://webtone.artgillespie.workers.dev
+- **Hosting:** Cloudflare Workers static assets (`wrangler.jsonc`, `_headers`, `.assetsignore`), deployed with `npm run deploy`. Cloudflare's agent plugin (skills + MCP) is installed in Claude Code.
+- **Verified live:**
+  - COOP/COEP headers are served, and the page is `crossOriginIsolated`.
+  - Dev files (`test/`, `tools/`, configs, `.git`) return 404.
+  - `dt.selftest()` passes.
+  - The offline render on the live origin matches the local render exactly (RMS −16.4 dB).
+  - Realtime audio was not verified by automation, because a background tab gives no user gesture. Check it by hand.
