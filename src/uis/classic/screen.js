@@ -27,7 +27,8 @@ export class Screen {
     this.hover = null;
     this.dpr = 1;
     this.w = 0; this.h = 0;
-    new ResizeObserver(() => this.resize()).observe(canvas);
+    this.ro = new ResizeObserver(() => this.resize());
+    this.ro.observe(canvas);
     this.resize();
   }
 
@@ -39,6 +40,8 @@ export class Screen {
     this.cv.height = Math.round(this.h * this.dpr);
     if (this.app.store) this.draw(); // resizing clears the canvas
   }
+
+  destroy() { this.ro.disconnect(); }
 
   touch(id) { this.focus = { id, until: performance.now() + 1400 }; }
 

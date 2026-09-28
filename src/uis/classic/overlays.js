@@ -1,8 +1,8 @@
 // Modal sheets: patterns, song, mixer (+ send FX / compressor / master),
 // sounds (machines + presets), project (files, export, audio, MIDI), help.
 
-import { h, setText, setStyle, toast, dragNumber } from './dom.js';
-import { Knob } from './knob.js';
+import { h, setText, setStyle, toast, dragNumber } from '../../app/ui/dom.js';
+import { Knob } from '../../app/ui/knob.js';
 import { FX_PAGES, getDef, formatValue, MACHINES, SPEEDS, noteName } from '../../core/params.js';
 import { BANKS, patternId, parsePatternId, newProject, clone, migrateProject, validateProject } from '../../core/project.js';
 import { PRESETS, presetSound } from '../../core/presets.js';
@@ -34,7 +34,7 @@ export class Overlays {
     if (!this.current) return;
     const { name, sheet } = this.current;
     this.frameFn = null;
-    const title = { patterns: 'PATTERNS', song: 'SONG MODE', mixer: 'MIXER & FX', sounds: 'SOUNDS', project: 'PROJECT', help: 'HELP' }[name];
+    const title = { patterns: 'PATTERNS', song: 'SONG MODE', mixer: 'MIXER & FX', sounds: 'SOUNDS', project: 'SETTINGS & PROJECT', help: 'HELP' }[name];
     sheet.replaceChildren(
       h('h2', title, h('button.btn.small.close', { 'data-testid': 'overlay-close', on: { click: () => this.close() } }, 'CLOSE ✕')),
       ...[].concat(this['build_' + name]()),
@@ -203,10 +203,7 @@ export class Overlays {
       const f = e.target.files[0];
       if (!f) return;
       try {
-        const p = migrateProject(JSON.parse(await f.text()));
-        const errs = validateProject(p);
-        if (errs.length) throw new Error(errs.slice(0, 3).join('; '));
-        store.dispatch({ type: 'loadProject', project: p });
+        const p = await this.app.files.importProject(f);
         toast('Loaded ' + p.name);
         this.render();
       } catch (err) { toast('Import failed: ' + err.message, true); }
@@ -217,11 +214,15 @@ export class Overlays {
     const lat = audio.latencyInfo();
     const devSel = h('select.pick', { on: { change: async (e) => { try { await audio.setSink(e.target.value); toast('Output changed'); } catch (err) { toast(err.message, true); } } } }, h('option', { value: '' }, 'Default output'));
     if (navigator.mediaDevices?.enumerateDevices) navigator.mediaDevices.enumerateDevices().then((ds) => ds.filter((d) => d.kind === 'audiooutput' && d.deviceId !== 'default').forEach((d) => devSel.append(h('option', { value: d.deviceId }, d.label || 'Output ' + d.deviceId.slice(0, 6))))).catch(() => {});
+    const uis = h('div.machines', { 'data-testid': 'ui-switcher' }, ...this.app.uis.map((u) =>
+      h('button.btn' + (this.app.ui && u.id === this.app.ui.id ? '.on' : ''), { 'data-testid': 'ui-' + u.id, on: { click: () => this.app.useUI(u.id) } }, h('b', u.name), h('span', u.description))));
     return [
+      h('h4', 'INTERFACE  ·  press \\ to cycle'), uis,
+      h('h4', 'PROJECT'),
       h('div.formrow',
         h('div.field', h('label', 'PROJECT NAME'), name),
         h('div.field', h('label', 'FILES'), h('div.row',
-          h('button.btn', { 'data-testid': 'export-json', on: { click: () => download(`${store.project.name || 'project'}.webtone.json`, new Blob([JSON.stringify(store.project, null, 1)], { type: 'application/json' })) } }, 'EXPORT JSON'),
+          h('button.btn', { 'data-testid': 'export-json', on: { click: () => this.app.files.exportProject() } }, 'EXPORT JSON'),
           h('button.btn', { on: { click: () => file.click() } }, 'IMPORT JSON'), file)),
         h('div.field', h('label', 'NEW'), h('div.row',
           h('button.btn', { on: { click: () => { store.dispatch({ type: 'loadProject', project: newProject() }); toast('New project'); this.render(); } } }, 'EMPTY'),
@@ -234,9 +235,8 @@ export class Overlays {
         h('button.btn', { 'data-testid': 'render-wav', on: { click: async () => {
           renderStatus.textContent = 'RENDERING…';
           try {
-            const r = await audio.renderOffline({ bars: +bars.value, song: songChk.checked });
-            download(`${store.project.name || 'render'}.wav`, r.wav);
-            renderStatus.textContent = `DONE · peak ${r.stats.peakDb} dB · rms ${r.stats.rmsDb} dB · ${r.stats.renderMs} ms`;
+            const st = await this.app.files.renderWav({ bars: +bars.value, song: songChk.checked });
+            renderStatus.textContent = `DONE · peak ${st.peakDb} dB · rms ${st.rmsDb} dB · ${st.renderMs} ms`;
           } catch (e) { renderStatus.textContent = 'FAILED: ' + e.message; }
         } } }, 'RENDER WAV'), renderStatus),
       h('h4', 'AUDIO'),
@@ -260,7 +260,7 @@ export class Overlays {
       ['Esc', 'Deselect steps / close sheet'], ['Delete / Backspace', 'Clear selected steps'],
       ['⌘/Ctrl C / V', 'Copy / paste steps (selection or page)'], ['⌘/Ctrl Z / ⇧⌘Z', 'Undo / redo'],
       ['Knob: drag / wheel / arrows', 'Change value (Shift = fine); double-click = reset'], ['Tempo / LEN / SPD boxes', 'Drag vertically or scroll'],
-      ['I / M / N / B', 'Patterns (I) / Mixer / souNds / song (B)'], ['?', 'This help'],
+      ['I / M / N / B', 'Patterns (I) / Mixer / souNds / song (B)'], ['\\', 'Switch UI (classic / MAGI …)'], ['?', 'This help'],
     ];
     return [
       h('div.help-grid', ...rows.map(([k, d]) => h('div', h('kbd', k), h('span', d)))),
@@ -273,13 +273,5 @@ export class Overlays {
 
 function swap(arr, i, j) { const a = arr.slice(); [a[i], a[j]] = [a[j], a[i]]; return a; }
 
-export function download(name, blob) {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name.replace(/[^\w.-]+/g, '_');
-  document.body.append(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-}
 
 void dragNumber; void noteName; void clone;

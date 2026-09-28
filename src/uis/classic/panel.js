@@ -2,8 +2,8 @@
 // { update(kind), frame() }: update() runs after store changes, frame() runs
 // every animation frame for telemetry (playheads, meters).
 
-import { h, $, setText, setClass, setStyle, dragNumber, SVG, toast } from './dom.js';
-import { Knob } from './knob.js';
+import { h, $, setText, setClass, setStyle, dragNumber, SVG, toast } from '../../app/ui/dom.js';
+import { Knob } from '../../app/ui/knob.js';
 import {
   pageParams, pagesFor, getDef, MACHINES, FILTER_LABELS, destinationsFor, formatValue, SPEEDS, LENGTHS, CONDITIONS,
   RETRIG_RATES, noteName, FILTER_MACHINES, PARAM_BY_ID,
@@ -15,6 +15,7 @@ import { TEL } from '../../engine/engine.js';
 export function mountHeader(app) {
   const { store, actions, audio } = app;
   const root = $('#header');
+  root.replaceChildren();
   const pat = h('div.lcd.wide', { title: 'Pattern (click: pattern browser)', 'data-testid': 'pattern-lcd', on: { click: () => app.overlays.open('patterns') } });
   const tempo = h('div.lcd', { title: 'Tempo (drag / wheel, shift = fine)', 'data-testid': 'tempo' });
   dragNumber(tempo, (d, fine) => actions.nudgeTempo(d * (fine ? 0.1 : 1)), 4);
@@ -29,7 +30,7 @@ export function mountHeader(app) {
   undo.querySelector('svg').style.cssText = redo.querySelector('svg').style.cssText = 'width:16px;height:16px;fill:currentColor';
   const cpu = h('span'), vo = h('span'), bar = h('i');
   const menu = [
-    ['PATTERNS', 'patterns'], ['SONG', 'song'], ['MIXER', 'mixer'], ['SOUNDS', 'sounds'], ['PROJECT', 'project'], ['?', 'help'],
+    ['PATTERNS', 'patterns'], ['SONG', 'song'], ['MIXER', 'mixer'], ['SOUNDS', 'sounds'], ['SETTINGS', 'project'], ['?', 'help'],
   ].map(([l, k]) => btn(l, `${l.toLowerCase()} (${k === 'help' ? '?' : ''})`, () => app.overlays.open(k), { 'data-testid': 'menu-' + k }));
 
   root.append(
@@ -66,10 +67,8 @@ export function mountHeader(app) {
   };
 }
 
-export function playingPatternId(t) {
-  const i = t[TEL.PATTERN] | 0;
-  return patternId(Math.floor(i / 16), i % 16);
-}
+export { playingPatternId } from '../../app/actions.js';
+import { playingPatternId } from '../../app/actions.js';
 
 // ============================================================== tracks
 export function mountTracks(app) {
@@ -323,9 +322,7 @@ function describeTrig(t) {
 const clampI = (v, a, b) => Math.max(a, Math.min(b, Math.round(v)));
 
 // ============================================================== lower: keyboard / inspector
-const KEYMAP = ['KeyA', 'KeyW', 'KeyS', 'KeyE', 'KeyD', 'KeyF', 'KeyT', 'KeyG', 'KeyY', 'KeyH', 'KeyU', 'KeyJ', 'KeyK', 'KeyO', 'KeyL', 'KeyP', 'Semicolon'];
-const KEYLABEL = ['A', 'W', 'S', 'E', 'D', 'F', 'T', 'G', 'Y', 'H', 'U', 'J', 'K', 'O', 'L', 'P', ';'];
-export { KEYMAP };
+import { KEYLABEL } from '../../app/keys.js';
 
 export function mountLower(app) {
   const { store, actions } = app;

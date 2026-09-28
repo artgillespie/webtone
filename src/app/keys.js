@@ -1,11 +1,13 @@
 // Computer keyboard: piano (Ableton-style layout) + shortcuts.
 
-import { KEYMAP } from './ui/panel.js';
+/** Ableton-style computer piano: A=C, W=C#, ... ; = E (one octave + a third). */
+export const KEYMAP = ['KeyA', 'KeyW', 'KeyS', 'KeyE', 'KeyD', 'KeyF', 'KeyT', 'KeyG', 'KeyY', 'KeyH', 'KeyU', 'KeyJ', 'KeyK', 'KeyO', 'KeyL', 'KeyP', 'Semicolon'];
+export const KEYLABEL = ['A', 'W', 'S', 'E', 'D', 'F', 'T', 'G', 'Y', 'H', 'U', 'J', 'K', 'O', 'L', 'P', ';'];
 
 const PAGE_KEYS = { Digit1: 'TRIG', Digit2: 'SYN1', Digit3: 'SYN2', Digit4: 'SYN3', Digit5: 'FLTR1', Digit6: 'FLTR2', Digit7: 'AMP', Digit8: 'FX', Digit9: 'LFO', Digit0: 'ARP' };
 
-export function installKeys(app) {
-  const { store, actions } = app;
+export function installKeys(host) {
+  const { store, actions } = host;
   const down = new Map(); // code -> note
 
   const typing = (e) => {
@@ -45,20 +47,20 @@ export function installKeys(app) {
       case 'ArrowLeft': e.preventDefault(); actions.setStepPage(store.ui.stepPage - 1); break;
       case 'ArrowRight': e.preventDefault(); actions.setStepPage(store.ui.stepPage + 1); break;
       case 'KeyQ': actions.toggleMute(); break;
-      case 'KeyB': app.overlays.open('song'); break;
-      case 'KeyM': app.overlays.open('mixer'); break;
-      case 'KeyN': app.overlays.open('sounds'); break;
-      case 'KeyI': app.overlays.open('patterns'); break;
+      case 'KeyB': host.command('open', 'song'); break;
+      case 'KeyM': host.command('open', 'mixer'); break;
+      case 'KeyN': host.command('open', 'sounds'); break;
+      case 'KeyI': host.command('open', 'patterns'); break;
+      case 'Backslash': host.cycleUI(); break;
       case 'Escape':
-        if (app.overlays.current) app.overlays.close();
-        else actions.clearSelection();
+        if (!host.command('escape')) actions.clearSelection();
         break;
       case 'Backspace': case 'Delete': e.preventDefault(); actions.clearSelectedSteps(); break;
-      case 'Slash': if (e.shiftKey) app.overlays.open('help'); break;
+      case 'Slash': if (e.shiftKey) host.command('open', 'help'); break;
       default:
         if (PAGE_KEYS[e.code]) {
           const p = PAGE_KEYS[e.code];
-          if (p === 'LFO') actions.cyclePage('LFO'); else actions.selectPage(p);
+          if (!host.command('page', p)) { if (p === 'LFO') actions.cyclePage('LFO'); else actions.selectPage(p); }
         }
     }
   });

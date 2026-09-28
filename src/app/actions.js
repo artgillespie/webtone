@@ -3,8 +3,14 @@
 
 import { TEL } from '../engine/engine.js';
 import { pagesFor, getDef, PARAM_BY_ID, paramMachine } from '../core/params.js';
-import { clone } from '../core/project.js';
+import { clone, patternId } from '../core/project.js';
 import { toast } from './ui/dom.js';
+
+/** Pattern id currently playing, decoded from engine telemetry. */
+export function playingPatternId(t) {
+  const i = t[TEL.PATTERN] | 0;
+  return patternId(Math.floor(i / 16), i % 16);
+}
 
 export class Actions {
   constructor(store, audio) {

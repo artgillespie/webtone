@@ -7,10 +7,10 @@ import { SOUND_PARAMS, FX_PARAMS, MACHINES, COMMON_PAGES, FX_PAGES, PAGE_ORDER, 
 import { PRESETS, presetSound } from '../core/presets.js';
 import { clone, validateProject } from '../core/project.js';
 import { TEL } from '../engine/engine.js';
-import { playingPatternId } from './ui/panel.js';
+import { playingPatternId } from './actions.js';
 
-export function installApi(app) {
-  const { store, actions, audio } = app;
+export function installApi(host) {
+  const { store, actions, audio } = host;
   const needAudio = () => { if (!audio.ready) throw new Error('Audio engine not started — call await dt.power() (needs a user gesture in some browsers) or click POWER.'); };
 
   const dt = {
@@ -40,6 +40,7 @@ export function installApi(app) {
   Verify
     await dt.selftest()             -> end-to-end UI/store/engine check (restores state)
   UI
+    dt.uis(), await dt.useUI('magi')  -> list / switch UI plugins (also ?ui=<id>, the \\ key, settings)
     dt.select({track?, page?, stepPage?, steps?})  dt.open('mixer'|'patterns'|...)  dt.close()
   Introspection
     dt.describe()                   -> commands, machines, pages, params, conditions
@@ -81,7 +82,7 @@ export function installApi(app) {
     redo: () => store.redo(),
     presets: () => PRESETS.map((p) => ({ name: p.name, machine: p.machine, category: p.category })),
     loadPreset(track, name) { return store.dispatch({ type: 'loadSound', track, sound: presetSound(name) }); },
-    async power() { await app.powerOn(); return audio.latencyInfo(); },
+    async power() { await host.powerOn(); return audio.latencyInfo(); },
     play() { needAudio(); actions.play(); },
     stop() { needAudio(); actions.stop(); },
     fill(on = true) { actions.setFill(on); },
@@ -134,8 +135,10 @@ export function installApi(app) {
       if (steps !== undefined) { store.ui.selected = new Set(steps); store.setUI({ selected: store.ui.selected }); }
       return dt.ui();
     },
-    open: (name) => app.overlays.open(name),
-    close: () => app.overlays.close(),
+    open: (name) => host.command('open', name),
+    close: () => host.command('close'),
+    uis: () => host.uis.map((u) => ({ id: u.id, name: u.name, description: u.description, active: !!host.ui && host.ui.id === u.id })),
+    async useUI(id) { await host.useUI(id); return dt.uis(); },
     errors: () => [...audio.errors],
     /**
      * In-page end-to-end check of UI <-> store <-> engine wiring. Leaves the
@@ -152,31 +155,9 @@ export function installApi(app) {
       const undoTo = store.past.length;
       const prevUi = { track: store.ui.track, page: store.ui.page, stepPage: store.ui.stepPage };
       await check('reducer: project valid', () => { const e = validateProject(store.project); assert(!e.length, e.join('; ')); });
-      await check('ui: trig key click toggles a trig', async () => {
-        dt.select({ track: 15, stepPage: 0, steps: [] });
-        await settle();
-        const had = !!store.pattern.tracks[15].steps[0];
-        document.querySelector('[data-testid=trig-1]').click();
-        await settle();
-        assert(!!store.pattern.tracks[15].steps[0] !== had, 'store not updated');
-        assert(document.querySelector('[data-testid=trig-1]').classList.contains('note') !== had, 'DOM not updated');
-      });
-      await check('ui: encoder keyboard input writes a p-lock on a selected step', async () => {
-        dt.select({ track: 15, page: 'AMP', steps: [0] });
-        await settle();
-        const k = document.querySelector('[data-testid=encoder-H]');
-        k.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-        await settle();
-        const t = store.pattern.tracks[15].steps[0];
-        assert(t && t.locks && 'amp.vol' in t.locks, 'no amp.vol lock');
-        dt.select({ steps: [] });
-      });
-      await check('ui: page buttons switch pages', async () => {
-        document.querySelector('[data-testid=page-FLTR1]').click();
-        await settle();
-        assert(store.ui.page === 'FLTR1', 'page is ' + store.ui.page);
-        assert(document.querySelector('[data-testid=encoder-E]').dataset.param === 'flt.frq', 'encoder E not bound to flt.frq');
-      });
+      if (host.view && host.view.selftest) {
+        await host.view.selftest({ check: (name, fn) => check(`ui[${host.ui.id}]: ${name}`, fn), assert, settle, host });
+      } else results.push({ name: `ui[${host.ui && host.ui.id}]: no UI-specific selftest`, ok: true });
       if (audio.ready) {
         await check('engine: mirror matches store after edits', async () => {
           const ep = await audio.query('project');
