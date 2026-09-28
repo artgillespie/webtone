@@ -16,4 +16,4 @@ export const UIS = [
   },
 ];
 
-export const DEFAULT_UI = 'classic';
+export const DEFAULT_UI = 'magi';

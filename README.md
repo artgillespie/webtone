@@ -5,7 +5,7 @@ tracks, 16 voices, four synth machines, parameter-lock sequencing, and send
 effects. All of it runs in a single AudioWorklet with no dependencies and no
 build step.
 
-**Live:** https://webtone.artgillespie.workers.dev (`?ui=magi` for the MAGI interface)
+**Live:** https://webtone.artgillespie.workers.dev (opens in MAGI; `?ui=classic` for the hardware-style panel)
 
 ```sh
 npm start        # → http://localhost:8080, click POWER

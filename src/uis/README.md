@@ -14,7 +14,7 @@ Current plugins:
 
 Switch with the settings panel (CLASSIC: SETTINGS, MAGI: SYSTEM), the `\` key,
 `?ui=<id>` in the URL, or `await dt.useUI('<id>')`. The choice persists in
-`localStorage['webtone:ui']`.
+`localStorage['webtone:ui']`; first-time visitors get `DEFAULT_UI` (`magi`) from `src/uis/index.js`.
 
 ## Contract
 
