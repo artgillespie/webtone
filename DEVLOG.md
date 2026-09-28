@@ -37,41 +37,46 @@ Running log of development sessions on WEBTONE//.
 
 ---
 
-## 2026-09-28 — Session 2: license, GitHub, swappable UIs + MAGI
+## 2026-09-28 — Session 2: swappable UIs, MAGI, public repo, live deploy
 
-**What we built:**
-- **Housekeeping:** added the MIT license and published to https://github.com/artgillespie/webtone.
-- **Decoupled UI:** split the app into a headless **host** (store, audio engine, actions, keys, MIDI, `dt` API, render loop) and swappable **UI plugins** (`src/uis/*`). You can switch at runtime with `\`, the settings panel, `?ui=`, or `dt.useUI()`.
-- **Classic UI:** kept the original interface as the `classic` plugin.
-- **New MAGI UI:** a direct-manipulation command center modelled on 90s anime computer displays.
-  - All parameters of the selected track are visible at once as draggable readouts.
-  - Editable graphs: envelopes, filter curve with a base-width band, LFO shapes and the FM algorithm.
-  - A paintable 16×16 sequencer matrix.
-  - MAGI status tiles, and windows for mixer, patterns, song, sounds and system.
-- **Undo:** gesture-scoped undo (one drag = one undo step) in the store.
+![MAGI UI on the live site](docs/screenshots/magi.jpg)
+*MAGI, the new default UI, on the live site. The FM bass track is selected and a p-locked step is open in the inspector (NOTE/LEN show LOCK). The capture ran in a background automation tab where audio can't start, so the MAGI tiles and scope read "engine offline".*
 
-**Wall time:** about 35 min for the UI work (≈10:45 → 11:20), inferred from commit timestamps.
+![CLASSIC UI](docs/screenshots/classic.jpg)
+*CLASSIC, the original hardware-style panel, still one keypress (`\`) away.*
 
-**Usage:** not yet recorded (add `/usage` figures here).
-**Token detail** (from the model's visible token budget counter): about **146k tokens** for this request. It isn't billing-exact.
+**What we did:**
+1. **Open source:** added the MIT license and published https://github.com/artgillespie/webtone.
+2. **Decoupled UI:** a headless **host** (`src/app/host.js`: store, engine, actions, keys, MIDI, `dt` API, render loop) plus swappable **UI plugins** (`src/uis/*`, contract in `src/uis/README.md`). Switch in settings, with `\`, `?ui=`, or `dt.useUI()`.
+3. **MAGI UI** (new default), a direct-manipulation command center styled after 90s anime displays:
+   - every parameter of the track visible at once as draggable readouts;
+   - editable graphs: envelopes, filter curve with base-width band, LFO shapes, FM algorithm;
+   - a paintable 16×16 matrix, MAGI status tiles, and windows for mixer, patterns, song, sounds and system.
+4. **Store:** one drag = one undo step, via `beginGesture`/`endGesture`.
+5. **Deploy:** Cloudflare Workers static assets (`wrangler.jsonc`, `_headers` for COOP/COEP, `.assetsignore`).
+   - Live at **https://webtone.artgillespie.workers.dev**.
+   - Auto-deploys every push to `main` through Workers Builds, with `npm test` as the build gate; changes go live in about 60–80 s.
+   - Cloudflare's agent plugin (skills + MCP) is installed in Claude Code.
+6. **Build info:** `tools/version.mjs` stamps `version.json` (short SHA, date) on every deploy. Settings shows it with the GitHub link, and `dt.about()` returns it.
+
+**Wall time:** about **1 h 10 min** (10:45 → 11:56 by commit timestamps), including the time spent on Cloudflare signup and email verification. The UI framework + MAGI part took about 35 min of that.
+
+**Usage:**
+- From `/usage`: not yet recorded (add here).
+- **Tokens:** about **200k** for the session, summed from the model's per-turn token budget counter. That's about 150k for the UI plugin framework + MAGI and about 50k for GitHub, Cloudflare setup, deploys and polish. It isn't billing-exact.
 
 **Verification:**
 - 44 Node tests, including new store undo/gesture tests.
-- `dt.selftest()` passes under both UIs: core, engine and UI-specific checks.
-- A real mouse drag on the MAGI filter graph changes FREQ/RESO and records a single undo step.
-- UI switching fully swaps DOM, CSS and body class without touching project state.
+- `dt.selftest()` passes under both UIs.
+- A real mouse drag on the MAGI filter graph gives one undo step.
+- Live site:
+  - COOP/COEP headers are served and the page is `crossOriginIsolated`.
+  - Dev files return 404.
+  - The offline render matches local exactly (RMS −16.4 dB).
+  - `version.json` reports the pushed SHA, built by `workers-builds`.
+- Not verified by automation: realtime audio on the live site, because a background tab gives no user gesture. Checked by hand.
 
 **Known gaps / next ideas:**
-- MAGI assumes a desktop-size viewport. Below 1280 px it stacks and scrolls.
-- The classic knob drag still uses time-based undo coalescing instead of gestures.
-
-### 2026-09-28 — Deployed
-
-- **Live:** https://webtone.artgillespie.workers.dev
-- **Hosting:** Cloudflare Workers static assets (`wrangler.jsonc`, `_headers`, `.assetsignore`), deployed with `npm run deploy`. Cloudflare's agent plugin (skills + MCP) is installed in Claude Code.
-- **Verified live:**
-  - COOP/COEP headers are served, and the page is `crossOriginIsolated`.
-  - Dev files (`test/`, `tools/`, configs, `.git`) return 404.
-  - `dt.selftest()` passes.
-  - The offline render on the live origin matches the local render exactly (RMS −16.4 dB).
-  - Realtime audio was not verified by automation, because a background tab gives no user gesture. Check it by hand.
+- MAGI assumes a desktop viewport and stacks below 1280 px.
+- The CLASSIC knob drag still uses time-based undo coalescing.
+- A custom domain is optional.
